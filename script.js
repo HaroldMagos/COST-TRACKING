@@ -1,7 +1,11 @@
 // script.js
-// Firebase imports
+
+// --- Firebase Imports ---
+// Make sure to import ALL the services you plan to use!
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getFirestore } from "firebase/firestore"; // <-- NEW: Import for Firestore
+import { getAuth } from "firebase/auth";           // <-- NEW: Import for Authentication
 
 // --- Firebase Configuration ---
 // IMPORTANT: Replace these with your actual Firebase project configuration.
@@ -17,22 +21,41 @@ const firebaseConfig = {
   measurementId: "G-4VCCTLKCK3"
 };
 
-// Use the projectId from your firebaseConfig for the Firestore path
-const appId = firebaseConfig.projectId; // Using project ID as a unique app identifier for Firestore paths
+// Declare variables that will hold our Firebase service instances.
+// We'll initialize them conditionally.
+let app;
+let analytics;
+let db; // For Firestore
+let auth; // For Authentication
+let userId; // This variable will be managed by your authentication logic later
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-let app, db, auth, userId;
+// Initialize Firebase only if the configuration is valid
 if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    // Initialize the Firebase app instance once
     app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
+
+    // Get instances of the services you need
+    analytics = getAnalytics(app);      // Initialize Analytics
+    db = getFirestore(app);             // Initialize Firestore
+    auth = getAuth(app);                // Initialize Authentication
+
     console.log("Firebase initialized successfully.");
 } else {
-    console.error("Firebase configuration is missing or placeholder values are present. Firestore features will not be available.");
+    console.error("Firebase configuration is missing or placeholder values are present. Firestore and other Firebase features will not be available.");
     console.error("Please replace 'YOUR_API_KEY', 'YOUR_PROJECT_ID', etc., in script.js with your actual Firebase project configuration.");
 }
+
+// Now you can use `app`, `analytics`, `db`, and `auth` throughout your application!
+// Example:
+// if (db) {
+//   // Do something with Firestore, like adding a document
+//   // addDoc(collection(db, "users"), { name: "Alice" });
+// }
+// if (auth) {
+//   // Do something with Authentication, like signing in a user
+//   // signInWithEmailAndPassword(auth, "test@example.com", "password123");
+// }
+
 
 // Global data stores for easy access and manipulation
 let allProjects = [];
