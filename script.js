@@ -1,8 +1,7 @@
 // script.js
 // Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 
 // --- Firebase Configuration ---
 // IMPORTANT: Replace these with your actual Firebase project configuration.
@@ -22,6 +21,8 @@ const firebaseConfig = {
 const appId = firebaseConfig.projectId; // Using project ID as a unique app identifier for Firestore paths
 
 // Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 let app, db, auth, userId;
 if (Object.keys(firebaseConfig).length > 0 && firebaseConfig.apiKey !== "YOUR_API_KEY") {
     app = initializeApp(firebaseConfig);
