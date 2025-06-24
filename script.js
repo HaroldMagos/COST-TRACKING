@@ -8,12 +8,14 @@ import { getFirestore, collection, addDoc, onSnapshot, doc, deleteDoc } from "ht
 // IMPORTANT: Replace these with your actual Firebase project configuration.
 // You can find this in your Firebase project settings -> Project settings -> General -> Your apps -> Firebase SDK snippet -> Config.
 const firebaseConfig = {
-    apiKey: "AIzaSyDdVgKwhZl0sTTTLZ7iTmt1r3N2cJLnaDk",
-    authDomain: "cost-tracker-78f88.firebaseapp.com",
-    projectId: "cost-tracker-78f88",
-    storageBucket: "cost-tracker-78f88.appspot.com",
-    messagingSenderId: "914485732081",
-    appId: "1:914485732081:web:7c8534e44a77cf9aea7f50"
+  apiKey: "AIzaSyAQgMwB93BTIw-vRI92Dba0Ht2qS94z2IU",
+  authDomain: "cost-tracker-78f88.firebaseapp.com",
+  databaseURL: "https://cost-tracker-78f88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "cost-tracker-78f88",
+  storageBucket: "cost-tracker-78f88.firebasestorage.app",
+  messagingSenderId: "914485732081",
+  appId: "1:914485732081:web:7c8534e44a77cf9aea7f50",
+  measurementId: "G-4VCCTLKCK3"
 };
 
 // Use the projectId from your firebaseConfig for the Firestore path
