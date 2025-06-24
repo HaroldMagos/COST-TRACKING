@@ -13,7 +13,7 @@ const firebaseConfig = {
     projectId: "cost-tracker-78f88",
     storageBucket: "cost-tracker-78f88.appspot.com",
     messagingSenderId: "914485732081",
-    appId: "1:914485732081:web:xxxxxxxxxxxxxxxx"
+    appId: "1:914485732081:web:7c8534e44a77cf9aea7f50"
 };
 
 // Use the projectId from your firebaseConfig for the Firestore path
