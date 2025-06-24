@@ -1,0 +1,101 @@
+To deploy your Construction Project Management application to GitHub (e.g., using GitHub Pages), follow these steps:
+
+1. Create Your Project Structure
+Create a new directory for your project on your local machine and add the three files provided:
+
+your-project-name/
+├── index.html
+├── style.css
+└── script.js
+
+2. Get Your Firebase Configuration
+You need your actual Firebase project configuration.
+
+Go to the Firebase Console.
+
+Select your project.
+
+Click on the Project settings gear icon (⚙️) next to "Project Overview" in the left navigation.
+
+Under the "General" tab, scroll down to the "Your apps" section.
+
+If you haven't added a web app yet, click the "Web" icon (</>) to add a new web app. Follow the steps, and Firebase will provide you with a firebaseConfig object. If you already have a web app, click on its "Config" button.
+
+Copy the firebaseConfig object. It will look something like this:
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC...",
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "...",
+  appId: "1:..."
+};
+
+3. Update script.js with Your Firebase Config
+Open script.js and replace the placeholder firebaseConfig object with your actual configuration copied from the Firebase Console:
+
+// script.js
+// ... (other imports)
+
+// --- Firebase Configuration ---
+// IMPORTANT: Replace these with your actual Firebase project configuration.
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY", // <--- REPLACE THIS
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com", // <--- REPLACE THIS
+    projectId: "YOUR_PROJECT_ID", // <--- REPLACE THIS
+    storageBucket: "YOUR_PROJECT_ID.appspot.com", // <--- REPLACE THIS
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID", // <--- REPLACE THIS
+    appId: "YOUR_APP_ID" // <--- REPLACE THIS
+};
+
+// ... (rest of the script.js code)
+
+Ensure that Firebase Authentication is enabled in your Firebase project (Firebase Console -> Build -> Authentication -> Get started). The current application uses anonymous authentication for simplicity in a GitHub Pages environment.
+
+4. Initialize a Git Repository
+Open your terminal or command prompt, navigate to your project directory (your-project-name/), and initialize a Git repository:
+
+cd your-project-name
+git init
+git add .
+git commit -m "Initial commit of billing app"
+
+5. Create a GitHub Repository
+Go to GitHub and log in.
+
+Click the "+" sign in the top right corner and select "New repository."
+
+Give your repository a name (e.g., construction-billing-app).
+
+Choose whether it's public or private.
+
+Do NOT initialize with a README, .gitignore, or license (you've already done git init locally).
+
+Click "Create repository."
+
+6. Link Local to GitHub Repository
+After creating the repository on GitHub, you'll see instructions to push an existing local repository. Copy the commands and run them in your terminal:
+
+git remote add origin https://github.com/your-username/your-repository-name.git
+git branch -M main
+git push -u origin main
+
+Replace your-username and your-repository-name with your actual GitHub username and the name of your repository.
+
+7. Enable GitHub Pages
+On GitHub, navigate to your repository.
+
+Click on the Settings tab.
+
+In the left sidebar, click on Pages.
+
+Under "Build and deployment," set "Source" to Deploy from a branch.
+
+Select main as your branch and / (root) as the folder.
+
+Click Save.
+
+GitHub Pages will then build and deploy your site. It might take a few minutes for the site to become live. Once deployed, you'll see a link to your live application (e.g., https://your-username.github.io/your-repository-name/).
+
+Now your application is hosted on GitHub Pages, and all data operations will interact with your Firebase Firestore project.
