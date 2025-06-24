@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Project Management</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Link to external stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="customModal" class="hidden">
+        <div>
+            <h3 id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div>
+                <button onclick="hideModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-layout">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar flex flex-col space-y-2">
+            <button onclick="window.showSidebarForm('projectForm'); window.showDashboardTab('projectsDashboardTab')">
+                <span class="text-xl">🏗️</span>
+                <span>Project</span>
+            </button>
+            <button onclick="window.showSidebarForm('changeOrderForm'); window.showDashboardTab('changeOrdersDashboardTab')">
+                <span class="text-xl">📝</span>
+                <span>C.O.</span>
+            </button>
+            <button onclick="window.showSidebarForm('billOfQuantitiesForm'); window.showDashboardTab('boqDashboardTab')">
+                <span class="text-xl">📋</span>
+                <span>BOQ</span>
+            </button>
+            <button onclick="window.showSidebarForm('billOfMaterialsForm'); window.showDashboardTab('bomDashboardTab')">
+                <span class="text-xl">📦</span>
+                <span>BOM</span>
+            </button>
+            <button onclick="window.showSidebarForm('billOfLaborForm'); window.showDashboardTab('bolDashboardTab')">
+                <span class="text-xl">💪</span>
+                <span>BOL</span>
+            </button>
+            <button onclick="window.showSidebarForm('billForm'); window.showDashboardTab('billDashboardTab')">
+                <span class="text-xl">📑</span>
+                <span>BILLING</span>
+            </button>
+            <div class="border-t"></div>
+            <button onclick="window.showSidebarForm('dashboardView'); window.showDashboardTab('projectsDashboardTab');" class="active-sidebar-btn">
+                <span class="text-xl">📊</span>
+                <span>VIEW</span>
+            </button>
+        </div>
+
+
+        <!-- The formContainer is back to being a collapsible sidebar -->
+        <div id="formContainer" class="form-sidebar">
+            <div id="projectForm" class="form-section space-y-4 active">
+                <h3>Add Project</h3>
+                <input type="text" id="proj_name" placeholder="Project Name" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="proj_client_name" placeholder="Client Name" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="proj_scope" placeholder="Scope of Work" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="proj_code" placeholder="Project Code" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="proj_amount" placeholder="Contract Amount">
+                <label for="proj_start">Start Date:</label>
+                <input type="date" id="proj_start">
+                <label for="proj_end">End Date:</label>
+                <input type="date" id="proj_end">
+                <input type="text" id="proj_remarks" placeholder="Remarks" oninput="this.value = this.value.toUpperCase()">
+                <button onclick="window.saveProject()">Save Project</button>
+            </div>
+
+            <div id="changeOrderForm" class="form-section space-y-4 hidden">
+                <h3>Add Change Order</h3>
+                
+                <label for="co_project_id">Select Project Name:</label>
+                <select id="co_project_id" onchange="window.populateProjectCodeDropdown()">
+                    <option value="">Select Project Name</option>
+                </select>
+
+                <label for="co_project_code_dropdown">Select Project Code:</label>
+                <select id="co_project_code_dropdown" disabled onchange="window.updateClientNameForCOForm()">
+                    <option value="">Select Project Code</option>
+                </select>
+
+                <!-- Corrected: Client Name is now a readonly display field -->
+                <label for="co_client_name_display">Client Name:</label>
+                <input type="text" id="co_client_name_display" readonly placeholder="Client Name will appear here">
+
+                <input type="text" id="co_number" placeholder="Change Order Number" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="co_scope" placeholder="Change Order Scope" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="co_amount" placeholder="Amount">
+                <label for="co_start">Start Date:</label>
+                <input type="date" id="co_start">
+                <label for="co_end">End Date:</label>
+                <input type="date" id="co_end">
+                <input type="text" id="co_remarks" placeholder="Remarks" oninput="this.value = this.value.toUpperCase()">
+                <button onclick="window.saveChangeOrder()">Save Change Order</button>
+            </div>
+
+            <div id="billOfQuantitiesForm" class="form-section space-y-4 hidden">
+                <h3>Add Bill of Quantity Item(s)</h3>
+
+                <label for="boq_project_name">Select Project Name:</label>
+                <select id="boq_project_name" onchange="window.populateBOQProjectCodeDropdown()">
+                    <option value="">Select Project Name</option>
+                </select>
+
+                <label for="boq_project_code_dropdown" id="boq_project_code_dropdown_label" class="hidden">Select Project Code:</label>
+                <select id="boq_project_code_dropdown" disabled class="hidden" onchange="window.populateBOQCOSelector()">
+                    <option value="">Select Project Code</option>
+                </select>
+
+                <label for="boq_co_selector" id="boq_co_selector_label" class="hidden">Select Change Order (Optional):</label>
+                <select id="boq_co_selector" class="hidden">
+                    <option value="">No Change Order (Link to Original Contract)</option>
+                </select>
+                
+                <hr class="my-4 border-gray-300">
+                
+                <h4>Item Details</h4>
+                <input type="text" id="boq_item_description" placeholder="Item Description" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="boq_quantity" placeholder="Quantity" oninput="window.calculateBOQCostsAndTotal()">
+                <input type="text" id="boq_uom" placeholder="Unit of Measure (UOM)" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="boq_labor_cost" placeholder="Labor Cost per Unit" oninput="window.calculateBOQCostsAndTotal()">
+                <input type="number" id="boq_material_cost" placeholder="Material Cost per Unit" oninput="window.calculateBOQCostsAndTotal()">
+                <input type="number" id="boq_other_cost" placeholder="Other Cost per Unit" oninput="window.calculateBOQCostsAndTotal()">
+                
+                <label for="boq_unit_rate">Unit Rate (Labor + Material + Other):</label>
+                <input type="number" id="boq_unit_rate" placeholder="Unit Rate" readonly>
+
+                <label for="boq_total_amount">Total Item Amount:</label>
+                <input type="number" id="boq_total_amount" placeholder="Total Amount" readonly>
+                
+                <button onclick="window.addBOQItemToList()">Add to List</button>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Items to be Submitted</h4>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Qty</th>
+                                <!-- <th>UOM</th>
+                                <th>Labor</th>
+                                <th>Material</th>
+                                <th>Other</th> -->
+                                <th>Unit Rate</th>
+                                <th>Total</th>
+                                <!-- <th>Parent</th> -->
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="boqTempTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button id="saveAllBOQItemsBtn" onclick="window.saveAllBOQItems()" class="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Save All BOQ Items</button>
+            </div>
+
+            <div id="billOfMaterialsForm" class="form-section space-y-4 hidden">
+                <h3>Add Bill of Materials Item(s)</h3>
+                
+                <label for="bom_project_name">Select Project Name:</label>
+                <select id="bom_project_name" onchange="window.populateBOMProjectCodeDropdown()">
+                    <option value="">Select Project Name</option>
+                </select>
+
+                <label for="bom_project_code_dropdown" id="bom_project_code_dropdown_label" class="hidden">Select Project Code:</label>
+                <select id="bom_project_code_dropdown" disabled class="hidden" onchange="window.populateBOMCOSelector(); window.populateBOMBoqParentDropdown()">
+                    <option value="">Select Project Code</option>
+                </select>
+
+                <label for="bom_co_selector" id="bom_co_selector_label" class="hidden">Select Change Order (Optional):</label>
+                <select id="bom_co_selector" disabled class="hidden" onchange="window.populateBOMBoqParentDropdown()">
+                    <option value="">No Change Order (Link to Original Contract)</option>
+                </select>
+                
+                <hr class="my-4 border-gray-300">
+                <label for="bom_boq_item">Select Parent BOQ Item:</label>
+                <select id="bom_boq_item" onchange="window.displayBOQQuantityForBOM()">
+                    <option value="">Select BOQ Item</option>
+                </select>
+
+                <div id="bom_boq_quantity_display" class="hidden text-sm text-gray-600 mt-2">
+                    BOQ Item Quantity: <span id="bom_boq_qty_value" class="font-semibold"></span> <span id="bom_boq_qty_uom" class="font-semibold"></span>
+                </div>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Material Details</h4>
+                <input type="text" id="bom_material_name" placeholder="Material Name" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="bom_material_coverage" placeholder="Material Coverage (per BOQ unit)" oninput="window.calculateBOMQuantitiesAndCosts()">
+                <input type="text" id="bom_coverage_uom" placeholder="Coverage UOM (e.g., SqFt/Gallon)" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="bom_material_uom" placeholder="Material UOM (e.g., Gallon, Kg, Each)" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="bom_unit_cost" placeholder="Unit Cost of Material" oninput="window.calculateBOMQuantitiesAndCosts()">
+                
+                <label for="bom_calculated_quantity">Calculated Quantity (BOQ Qty / Coverage):</label>
+                <input type="number" id="bom_calculated_quantity" placeholder="Calculated Quantity" readonly>
+
+                <label for="bom_total_cost">Total Cost (Calculated Qty * Unit Cost):</label>
+                <input type="number" id="bom_total_cost" placeholder="Total Cost" readonly>
+                
+                <input type="text" id="bom_remarks" placeholder="Remarks (Optional)" oninput="this.value = this.value.toUpperCase()">
+                
+                <button onclick="window.addBOMItemToList()">Add to List</button>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Items to be Submitted</h4>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                               <!-- <th>Project Name</th>
+                                <th>Project Code</th>
+                                <th>Change Order Code</th>
+                                <th>BOQ Parent Item</th> -->
+                                <th>Material Name</th> 
+                                <th>Material Coverage</th> 
+                           <!-- <th>Coverage UOM</th> -->
+                                <th>Calculated Qty</th> 
+                           <!-- <th>Material UOM</th> -->
+                           <!-- <th>Unit Cost</th> -->
+                                <th>Total Cost</th>
+                           <!-- <th>Remarks</th> -->
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bomTempTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                
+                <button id="saveAllBOMItemsBtn" onclick="window.saveAllBOMItems()" class="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Save All BOM Items</button>
+            </div>
+        
+
+            <div id="billOfLaborForm" class="form-section space-y-4 hidden">
+                <h3>Add Bill of Labor Item(s)</h3>
+                
+                <label for="bol_project_name">Select Project Name:</label>
+                <select id="bol_project_name" onchange="window.populateBOLProjectCodeDropdown()">
+                    <option value="">Select Project Name</option>
+                </select>
+
+                <label for="bol_project_code_dropdown" id="bol_project_code_dropdown_label" class="hidden">Select Project Code:</label>
+                <select id="bol_project_code_dropdown" disabled class="hidden" onchange="window.populateBOLCOSelector(); window.populateBOLBoqParentDropdown()">
+                    <option value="">Select Project Code</option>
+                </select>
+
+                <label for="bol_co_selector" id="bol_co_selector_label" class="hidden">Select Change Order (Optional):</label>
+                <select id="bol_co_selector" disabled class="hidden" onchange="window.populateBOLBoqParentDropdown()">
+                    <option value="">No Change Order (Link to Original Contract)</option>
+                </select>
+                
+                <hr class="my-4 border-gray-300">
+                <label for="bol_boq_item">Select Parent BOQ Item:</label>
+                <select id="bol_boq_item" onchange="window.displayBOQQuantityForBOL()">
+                    <option value="">Select BOQ Item</option>
+                </select>
+
+                <div id="bol_boq_quantity_display" class="hidden text-sm text-gray-600 mt-2">
+                    BOQ Item Quantity: <span id="bol_boq_qty_value" class="font-semibold"></span> <span id="bol_boq_qty_uom" class="font-semibold"></span>
+                </div>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Labor Details</h4>
+                <input type="text" id="bol_labor_name" placeholder="Labor Skill" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="bol_labor_coverage" placeholder="Labor Coverage (per BOQ unit)" oninput="window.calculateBOLQuantitiesAndCosts()">
+                <input type="text" id="bol_coverage_uom" placeholder="Coverage UOM (e.g., Man-hour/Sq-m)" oninput="this.value = this.value.toUpperCase()">
+                <input type="text" id="bol_labor_uom" placeholder="Labor UOM (e.g., Man-Hours, MH)" oninput="this.value = this.value.toUpperCase()">
+                <input type="number" id="bol_unit_cost" placeholder="Unit Cost of Labor" oninput="window.calculateBOLQuantitiesAndCosts()">
+                
+                <label for="bol_calculated_quantity">Calculated Quantity (BOQ Qty / Coverage):</label>
+                <input type="number" id="bol_calculated_quantity" placeholder="Calculated Quantity" readonly>
+
+                <label for="bol_total_cost">Total Cost (Calculated Qty * Unit Cost):</label>
+                <input type="number" id="bol_total_cost" placeholder="Total Cost" readonly>
+                
+                <input type="text" id="bol_remarks" placeholder="Remarks (Optional)" oninput="this.value = this.value.toUpperCase()">
+                
+                <button onclick="window.addBOLItemToList()">Add to List</button>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Items to be Submitted</h4>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                            <!--<th>Project Name</th>
+                                <th>Project Code</th>
+                                <th>Change Order Code</th>
+                                <th>BOQ Parent Item</th> -->
+                                <th>Labor Name</th> 
+                                <th>Labor Coverage</th> 
+                           <!-- <th>Coverage UOM</th> -->
+                                <th>Calculated Qty</th> 
+                           <!-- <th>Labor UOM</th> -->
+                           <!-- <th>Unit Cost</th> -->
+                                <th>Total Cost</th>
+                           <!-- <th>Remarks</th> -->
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bolTempTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                
+                <button id="saveAllBOLItemsBtn" onclick="window.saveAllBOLItems()" class="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Save All BOL Items</button>
+            </div>
+
+
+
+        <!------ NEW BILL SECTION------>
+
+
+            <div id="billForm" class="form-section space-y-4 hidden">
+                <h3>Add Billing Item(s)</h3>
+                
+                <label for="bill_project_name">Select Project Name:</label>
+                <select id="bill_project_name" onchange="window.populateBILLProjectCodeDropdown()">
+                    <option value="">Select Project Name</option>
+                </select>
+
+                <label for="bill_project_code_dropdown" id="bill_project_code_dropdown_label" class="hidden">Select Project Code:</label>
+                <select id="bill_project_code_dropdown" disabled class="hidden" onchange="window.populateBILLCOSelector(); window.populateBILLBoqParentDropdown()">
+                    <option value="">Select Project Code</option>
+                </select>
+
+                <label for="bill_co_selector" id="bill_co_selector_label" class="hidden">Select Change Order (Optional):</label>
+                <select id="bill_co_selector" disabled class="hidden" onchange="window.populateBILLBoqParentDropdown()">
+                    <option value="">No Change Order (Link to Original Contract)</option>
+                </select>
+                
+                <hr class="my-4 border-gray-300">
+                <label for="bill_boq_item">Select Parent BOQ Item:</label>
+                <select id="bill_boq_item" onchange="window.displayBOQQuantityForBILL()">
+                    <option value="">Select BOQ Item</option>
+                </select>
+
+                <div id="bill_boq_quantity_display" class="hidden text-sm text-gray-600 mt-2">
+                    BOQ Item Quantity: <span id="bill_boq_qty_value" class="font-semibold"></span> <span id="bill_boq_qty_uom" class="font-semibold"></span>
+                </div>
+                <div id="bill_boq_unit_rate_display_container" class="hidden text-sm text-gray-600 mt-2">
+                    BOQ Unit Rate: <span id="bill_boq_unit_rate_value" class="font-semibold"></span>
+                </div>
+
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Billing Details</h4>
+                <input type="number" id="bill_area" placeholder="Billing Quantity/Area" oninput="window.calculateBILLQuantitiesAndCosts()">
+
+                <input type="text" id="bill_boq_uom_display" placeholder="Unit of Measurement will appear here" readonly>
+
+                <input type="number" id="bill_boq_unit_rate_display" placeholder="Unit Rate will appear here" readonly>
+
+                <label for="bill_total_cost">Total Cost:</label>
+                <input type="number" id="bill_total_cost" placeholder="Total Cost" readonly>
+                
+                <input type="text" id="bill_remarks" placeholder="Remarks (Optional)" oninput="this.value = this.value.toUpperCase()">
+                
+                <button onclick="window.addBILLItemToList()">Add to List</button>
+
+                <hr class="my-4 border-gray-300">
+
+                <h4>Items to be Submitted</h4>
+                <div class="overflow-x-auto mb-4">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th> <!--//from the dropdown selection -->
+                                <th>Project Code</th> <!--//from the dropdown selection -->
+                                <th>Change Order Code</th> <!-- //from the dropdown selection-->
+                                <th>BOQ Parent Item</th> <!-- //from the dropdown selection-->
+                                <th>Billing Quantity</th> <!-- //Manually input-->
+                                <th>UOM</th>  <!--// will be pulled from "id=BOQ_COL_UOM"-->
+                                <th>Unit Cost</th> <!--// Will be pulled from "id=BOQ_COL_UNIT_RATE"-->
+                                <th>Total Cost</th> <!--// Will be calculated from "id=BOQ_COL_UOM" * "id=BOQ_COL_UNIT_RATE"-->
+                                <th>Remarks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billTempTableBody">
+                            </tbody>
+                    </table>
+                </div>
+                
+                <button id="saveAllBILLItemsBtn" onclick="window.saveAllBILLItems()" class="bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed" disabled>Save All BILL Items</button>
+            </div>
+        </div>
+
+
+        <div id="dashboardView" class="main-dashboard">
+            <h3>Project Dashboard</h3>
+
+            <div id="dashboardFilters" class="mb-4">
+                <input type="text" id="globalDashboardFilter"
+                    oninput="window.applyDashboardGlobalFilter()"
+                    class="px-2 py-1 border rounded w-full"
+                    placeholder="Type to filter by keyword(s), separated by commas...">
+
+                <div class="dashboard-tabs-nav">
+                    <!-- These buttons will be populated dynamically to match the dashboard tabs -->
+                    <button onclick="window.showDashboardTab('projectsDashboardTab')" class="dashboard-tab-button active">Projects</button>
+                    <button onclick="window.showDashboardTab('changeOrdersDashboardTab')" class="dashboard-tab-button">Change Orders</button>
+                    <button onclick="window.showDashboardTab('boqDashboardTab')" class="dashboard-tab-button">Bill of Quantities</button>
+                    <button onclick="window.showDashboardTab('bomDashboardTab')" class="dashboard-tab-button">Bill of Materials</button>
+                    <button onclick="window.showDashboardTab('bolDashboardTab')" class="dashboard-tab-button">Bill of Labor</button>
+                    <button onclick="window.showDashboardTab('billDashboardTab')" class="dashboard-tab-button">Billing</button> <!-- Added Billing Tab -->
+                </div>
+
+                <div id="projectsDashboardTab" class="dashboard-tab-content dashboard-content-box active">
+                    <h3>Projects</h3>
+                    <div id="projectTotalDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Amount: Php 0.00 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Client Name</th>
+                                    <th>Project Name</th>
+                                    <th>Project Code</th>
+                                    <th>Scope of Work</th>
+                                    <th>Amount</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="projectsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="changeOrdersDashboardTab" class="dashboard-tab-content dashboard-content-box hidden">
+                    <h3>All Change Orders</h3>
+                    <div id="changeOrderTotalDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Change Orders: Php 0.00 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Client Name</th>
+                                    <th>Project Name</th>
+                                    <th>Scope of Work</th>
+                                    <th>Project Code</th>
+                                    <th>Change Order Code</th>
+                                    <th>Amount</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="changeOrdersTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="boqDashboardTab" class="dashboard-tab-content dashboard-content-box hidden">
+                    <h3>All Bill of Quantity Items</h3>
+                    <div id="boqTotalCostDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Cost: Php 0.00 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Client Name</th>
+                                    <th>Project Name</th>
+                                    <th>Scope of Work</th>
+                                    <th>Project Code</th>
+                                    <th>Change Order Code</th>
+                                    <th>Item Description</th>
+                                    <th>Quantity</th>
+                                    <th>UOM</th>
+                                    <th>Material</th>
+                                    <th>Labor</th>
+                                    <th>Other</th>
+                                    <th>Unit Rate</th>
+                                    <th>Total Amount</th>
+                                    <th>Remarks</th>
+                                    <th>Parent Type</th>
+                                </tr>
+                            </thead>
+                            <tbody id="boqTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="bomDashboardTab" class="dashboard-tab-content dashboard-content-box hidden">
+                    <h3>All Bill of Materials Items</h3>
+
+                    <div id="bomTotalCostDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Cost: <span class="text-green-600 font-bold">Php 0.00</span> 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Project Name</th>
+                                    <th>Project Code</th>
+                                    <th>Change Order Code</th>
+                                    <th>BOQ Parent ID</th>
+                                    <th>Material Name</th>
+                                    <th>Material Coverage</th>
+                                    <th>Coverage UOM</th>
+                                    <th>Calculated Qty</th> 
+                                    <th>Material UOM</th> 
+                                    <th>Unit Cost</th>
+                                    <th>Total Cost</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bomTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="bolDashboardTab" class="dashboard-tab-content dashboard-content-box hidden">
+                    <h3>All Bill of Labor Items</h3>
+
+                    <div id="bolTotalCostDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Cost: <span class="text-green-600 font-bold">Php 0.00</span> 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Project Name</th>
+                                    <th>Project Code</th>
+                                    <th>Change Order Code</th>
+                                    <th>BOQ Parent ID</th>
+                                    <th>Labor Name</th>
+                                    <th>Labor Coverage</th>
+                                    <th>Coverage UOM</th>
+                                    <th>Calculated Qty</th> 
+                                    <th>Labor UOM</th> 
+                                    <th>Unit Cost</th>
+                                    <th>Total Cost</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bolTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <div id="billDashboardTab" class="dashboard-tab-content dashboard-content-box hidden">
+                    <h3>All Billings</h3>
+
+                    <div id="billTotalCostDisplay" class="text-right font-semibold mb-2 text-green-700">
+                        Total Cost: <span class="text-green-600 font-bold">Php 0.00</span> 💰
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Project Name</th>
+                                    <th>Project Code</th>
+                                    <th>Change Order Code</th>
+                                    <th>BOQ Parent Item</th>
+                                    <th>Billing Quantity</th>
+                                    <th>UOM</th>
+                                    <th>Unit Cost</th>
+                                    <th>Total Cost</th>
+                                    <th>Remarks</th>
+                                </tr>
+                            </thead>
+                            <tbody id="billTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
